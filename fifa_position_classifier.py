@@ -358,78 +358,6 @@ print(f"   Overall prediction quality (F1-micro): {test_f1_micro:.1%} ")
 print(f"   Error rate (Hamming Loss): {test_hamming:.1%} ")
 print(f"   Exact combination match: {test_accuracy:.1%}  ")
 
-
-# VISUALIZATIONS
-print("\n📊 Step 14: Creating visualizations...")
-
-# Create figure with 2x2 grid
-fig, axes = plt.subplots(2, 2, figsize=(15, 12))
-
-# Plot 1: Feature Importance
-ax1 = axes[0, 0]
-top_20_features = mean_importance.head(20)
-ax1.barh(range(len(top_20_features)), top_20_features.values, color='steelblue')
-ax1.set_yticks(range(len(top_20_features)))
-ax1.set_yticklabels(top_20_features.index, fontsize=8)
-ax1.set_xlabel('Average Feature Importance')
-ax1.set_title('Top 20 Feature Importance')
-ax1.invert_yaxis()
-
-# Plot 2: Model Performance Comparison
-ax2 = axes[0, 1]
-metrics = ['Hamming Loss', 'Accuracy', 'F1-Macro', 'F1-Micro']
-val_values = [val_hamming, val_accuracy, val_f1_macro, val_f1_micro]
-test_values = [test_hamming, test_accuracy, test_f1_macro, test_f1_micro]
-
-x = np.arange(len(metrics))
-width = 0.35
-
-ax2.bar(x - width/2, val_values, width, label='Validation', alpha=0.8, color='lightblue')
-ax2.bar(x + width/2, test_values, width, label='Test', alpha=0.8, color='lightcoral')
-ax2.set_xlabel('Metrics')
-ax2.set_ylabel('Score')
-ax2.set_title('Model Performance: Validation vs Test')
-ax2.set_xticks(x)
-ax2.set_xticklabels(metrics, rotation=45)
-ax2.legend()
-ax2.set_ylim(0, 1)
-
-# Plot 3: Per-Position Accuracy
-ax3 = axes[1, 0]
-positions = list(position_scores.keys())
-accuracies = list(position_scores.values())
-bars = ax3.bar(positions, accuracies, color='lightgreen', alpha=0.7)
-ax3.set_xlabel('Position')
-ax3.set_ylabel('Test Accuracy')
-ax3.set_title('Per-Position Test Accuracy')
-ax3.tick_params(axis='x', rotation=45)
-ax3.set_ylim(0, 1)
-
-# Plot 4: Hide the empty subplot
-ax4 = axes[1, 1]
-ax4.axis('off')  # Turn off the 4th subplot
-
-plt.tight_layout()
-plt.show()
-
-# Additional visualization: Position distribution
-plt.figure(figsize=(12, 6))
-position_counts = [y[pos].sum() for pos in y.columns]
-bars = plt.bar(y.columns, position_counts, color='skyblue', alpha=0.7)
-plt.xlabel('Position')
-plt.ylabel('Number of Players')
-plt.title('Distribution of Player Positions in Dataset')
-plt.xticks(rotation=45)
-
-# Add value labels
-for bar, count in zip(bars, position_counts):
-    height = bar.get_height()
-    plt.text(bar.get_x() + bar.get_width()/2., height + 5,
-             f'{count}', ha='center', va='bottom')
-
-plt.tight_layout()
-plt.show()
-
 #  MODEL SAVING
 
 # Create models folder if it doesn't exist
@@ -457,38 +385,25 @@ joblib.dump(ohe, 'models/fifa_ohe_encoder.pkl')
 joblib.dump(mlb, 'models/fifa_mlb_encoder.pkl')
 joblib.dump(oe, 'models/fifa_oe_encoder.pkl')
 
+training_results = {
+    'position_scores': position_scores,
+    'val_metrics': {
+        'hamming': val_hamming,
+        'accuracy': val_accuracy,
+        'f1_macro': val_f1_macro,
+        'f1_micro': val_f1_micro
+    },
+    'test_metrics': {
+        'hamming': test_hamming,
+        'accuracy': test_accuracy,
+        'f1_macro': test_f1_macro,
+        'f1_micro': test_f1_micro
+    }
+}
+
+joblib.dump(training_results, 'models/training_results.pkl')
+print("  Training results saved to 'models/training_results.pkl'")
+
 print("  Models saved to 'models/' folder")
 
-#  SUMMARY REPORT
-
-print("SUMMARY REPORT")
-
-
-print(f"   FINAL RESULTS SUMMARY:")
-print(f"   Dataset size: {len(df):,} players")
-print(f"   Features used: {len(selected_features)} (from {X_train_final.shape[1]} total)")
-print(f"   Positions predicted: {len(y.columns)}")
-print(f"")
-print(f"     Model Performance:")
-print(f"      Test Accuracy: {test_accuracy:.4f}")
-print(f"      Test F1-Macro: {test_f1_macro:.4f}")
-print(f"      Test Hamming Loss: {test_hamming:.4f}")
-
-print(f"   Best performing positions:")
-sorted_positions = sorted(position_scores.items(), key=lambda x: x[1], reverse=True)
-for pos, score in sorted_positions[:5]:
-    print(f"   {pos}: {score:.4f}")
-
-print(f"  Files created:")
-print(f"   - models/fifa_model_complete.pkl (complete pipeline)")
-print(f"   - models/fifa_xgb_model.pkl (trained model)")
-print(f"   - models/fifa_ohe_encoder.pkl (categorical encoder)")
-print(f"   - models/fifa_mlb_encoder.pkl (multi-label encoder)")
-print(f"   - models/fifa_oe_encoder.pkl (ordinal encoder)")
-
-print(f"    Next steps for improvement:")
-print(f"   - Try different hyperparameters")
-print(f"   - Add more features or feature engineering")
-print(f"   - Try ensemble methods")
-print(f"   - Analyze misclassified examples")
 
