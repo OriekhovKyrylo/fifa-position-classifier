@@ -26,6 +26,10 @@ python fifa_classifier.py
 - Exact match 48% (normal for multi-label)
 - F1-Score: 70%
 
+per-Position Test Accuracy
+![Per-Position Accuracy](images/per_position_accuracy.png)
+Avarage feature importance
+![Average Feature Importance](images/average_feature_importance.png)
 ## What I learned
 
 - XGBoost works better than Random Forest here
@@ -44,3 +48,4 @@ python fifa_classifier.py
 - Try different models
 - More feature engineering
 - Hyperparameter tuning
+

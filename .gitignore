@@ -8,4 +8,4 @@ __pycache__/
 *venv/
 
 # Models
-models/*.pklgit --version
+models/*.pkl
